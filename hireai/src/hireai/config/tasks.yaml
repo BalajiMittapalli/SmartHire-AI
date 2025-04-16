@@ -1,0 +1,86 @@
+# Task Definitions for AI Job Screening System
+
+analyze_jd_task:
+  description: >
+    Read the Job Description file located at '{jd_file_path}' using the FileReadTool.
+    Analyze the content and extract key information including:
+    - Required skills (list)
+    - Preferred skills (list, if specified)
+    - Required experience level (e.g., years, seniority)
+    - Key qualifications (e.g., degrees, certifications)
+    - Main job responsibilities (summary)
+    Focus on extracting structured data suitable for matching.
+  expected_output: >
+    A structured summary of the Job Description, containing distinct sections
+    for required skills, preferred skills, experience level, qualifications,
+    and responsibilities. Output should be easily parsable (e.g., YAML or JSON format within the text).
+  agent: jd_analyzer
+  # Input parameter: {jd_file_path} - Path to the JD file
+  input_parameter: jd_file_path
+
+parse_cv_task:
+  description: >
+    Read the Candidate CV file located at '{cv_file_path}' using the FileReadTool.
+    Parse the content and extract key information including:
+    - Contact Information (Name, Email, Phone - if available)
+    - Summary/Objective (if present)
+    - Work Experience (Company, Role, Duration, Responsibilities)
+    - Education (Institution, Degree, Graduation Date)
+    - Skills (Technical, Soft)
+    - Certifications (if any)
+  expected_output: >
+    A structured representation of the CV content, ideally in a consistent
+    format (e.g., YAML or JSON within the text) covering all extracted sections.
+    Handle variations in CV formatting gracefully.
+  agent: cv_parser
+  # Input parameter: {cv_file_path} - Path to the CV file
+  input_parameter: cv_file_path
+
+market_research_task:
+  description: >
+    Based on the analyzed Job Description summary from the previous task,
+    research current market trends, salary benchmarks, and demand for the
+    key skills and experience level identified.
+    Use web search tools if necessary to gather up-to-date information.
+  expected_output: >
+    A concise report summarizing market insights, including typical salary ranges,
+    demand level for the role/skills, and any notable industry trends relevant
+    to the position described in the JD. Format as markdown.
+  agent: market_researcher
+  context: # This task needs the output of analyze_jd_task
+    - analyze_jd_task
+
+matching_task:
+  description: >
+    Take the structured JD summary from the 'analyze_jd_task' and the
+    structured CV summary from the 'parse_cv_task'.
+    Compare the candidate's profile against the job requirements.
+    Calculate a match score (e.g., percentage from 0 to 100) based on the alignment
+    of skills, experience, education, and qualifications.
+    Provide a brief explanation for the score, highlighting key matching points or discrepancies.
+  expected_output: >
+    A numerical match score (e.g., 85) and a short textual summary (2-3 sentences)
+    explaining the basis for the score. Example: "Match Score: 85. Strong alignment
+    in required technical skills and experience duration. Lacks preferred certification X."
+  agent: matching_agent
+  context: # This task needs the outputs of both JD analysis and CV parsing
+    - analyze_jd_task
+    - parse_cv_task
+
+schedule_interview_task:
+  description: >
+    Review the match result from the 'matching_task'. If the match score meets
+    the shortlisting threshold (e.g., >= 75%), retrieve the candidate's contact
+    details (especially email) from the 'parse_cv_task' output.
+    Compose a personalized interview request email. Include the job title,
+    potential time slots (if available), and necessary details.
+    Use an email tool to send the request.
+  expected_output: >
+    Confirmation message indicating whether an interview request email was sent
+    (e.g., "Interview request sent to candidate@email.com") or why it wasn't
+    (e.g., "Candidate match score below threshold"). Include the candidate's email
+    and the match score in the output.
+  agent: scheduler_agent
+  context: # Depends on CV parsing (for email) and matching (for score)
+    - parse_cv_task
+    - matching_task
