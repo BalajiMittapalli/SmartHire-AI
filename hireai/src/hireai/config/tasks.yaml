@@ -38,10 +38,10 @@ parse_cv_task:
 
 market_research_task:
   description: >
-    Based on the analyzed Job Description summary from the previous task,
-    research current market trends, salary benchmarks, and demand for the
-    key skills and experience level identified.
-    Use web search tools if necessary to gather up-to-date information.
+    Analyze the Job Description summary provided in the context.
+    Formulate a concise web search query to find current market trends,
+    salary benchmarks, and demand for the key skills and experience level identified in the JD.
+    Execute the search using the formulated query.
   expected_output: >
     A concise report summarizing market insights, including typical salary ranges,
     demand level for the role/skills, and any notable industry trends relevant
